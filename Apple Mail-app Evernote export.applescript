@@ -295,79 +295,78 @@ end selectNotebookFromList
 
 on processSelectedMails(theMessages)
 	tell application "Mail"
-		try
-			if tagging_Switch is "ON" then my showTaggingDialog()
+		if tagging_Switch is "ON" then my showTaggingDialog()
 
-			if EVnotebook is "" then my readEvernoteDefaultNotebook() --GET EVERNOTE'S DEFAULT NOTEBOOK
+		if EVnotebook is "" then my readEvernoteDefaultNotebook() --GET EVERNOTE'S DEFAULT NOTEBOOK
 
-			repeat with thisMessage in theMessages
+		repeat with thisMessage in theMessages
+			try
+				--GET MESSAGE INFO
+				set myTitle to the subject of thisMessage
+				set myContent to the content of thisMessage
+				set mySource to the source of thisMessage
+				set ReplyAddr to the reply to of thisMessage
+				set EmailDate to the date received of thisMessage
+				set allRecipients to (every to recipient of item 1 of thisMessage)
+
+				--TEST FOR CC RECIPIENTS
+				set allCCs to (every cc recipient of item 1 of thisMessage)
+
+				--ASSEMBLE ALL TO: RECIPENTS FOR HEADER
+				set toRecipients to ""
+				repeat with allRecipient in allRecipients
+					set toName to ""
+					set toName to (name of allRecipient)
+					if toName is missing value then set toName to ""
+					set toEmail to (address of allRecipient)
+					set toCombined to toName & space & "(" & toEmail & ")<br/>"
+					set toRecipients to (toRecipients & toCombined as string)
+				end repeat
+
+				--ASSEMBLE ALL CC: RECIPENTS FOR HEADER
+				set ccRecipients to ""
+
+				if allCCs is not {} then
+					repeat with allCC in allCCs
+						set ccName to ""
+						set ccName to (name of allCC)
+						if ccName is missing value then set toName to ""
+						set ccEmail to (address of allCC)
+						set ccCombined to ccName & space & "(" & ccEmail & ")<br/>"
+						set ccRecipients to (ccRecipients & ccCombined as string)
+					end repeat
+				end if
+				--CREATE MAIL MESSAGE URL
+				set theRecipient to ""
+				set ex to ""
+				set MsgLink to ""
 				try
-					--GET MESSAGE INFO
-					set myTitle to the subject of thisMessage
-					set myContent to the content of thisMessage
-					set mySource to the source of thisMessage
-					set ReplyAddr to the reply to of thisMessage
-					set EmailDate to the date received of thisMessage
-					set allRecipients to (every to recipient of item 1 of thisMessage)
-
-					--TEST FOR CC RECIPIENTS
-					set allCCs to (every cc recipient of item 1 of thisMessage)
-
-					--ASSEMBLE ALL TO: RECIPENTS FOR HEADER
-					set toRecipients to ""
-					repeat with allRecipient in allRecipients
-						set toName to ""
-						set toName to (name of allRecipient)
-						if toName is missing value then set toName to ""
-						set toEmail to (address of allRecipient)
-						set toCombined to toName & space & "(" & toEmail & ")<br/>"
-						set toRecipients to (toRecipients & toCombined as string)
-					end repeat
-
-					--ASSEMBLE ALL CC: RECIPENTS FOR HEADER
-					set ccRecipients to ""
-
-					if allCCs is not {} then
-						repeat with allCC in allCCs
-							set ccName to ""
-							set ccName to (name of allCC)
-							if ccName is missing value then set toName to ""
-							set ccEmail to (address of allCC)
-							set ccCombined to ccName & space & "(" & ccEmail & ")<br/>"
-							set ccRecipients to (ccRecipients & ccCombined as string)
-						end repeat
-					end if
-					--CREATE MAIL MESSAGE URL
 					set theRecipient to ""
-					set ex to ""
-					set MsgLink to ""
-					try
-						set theRecipient to ""
-						set theRecipient to the address of to recipient 1 of thisMessage
-						set MsgLink to "message://%3c" & thisMessage's message id & "%3e"
-						if theRecipient is not "" then set ex to my extractBetween(ReplyAddr, "<", ">") -- extract the Address
-					end try
-
-					--HTML EMAIL FUNCTIONS
-					set theBoundary to my extractBetween(mySource, "boundary=\"", "\"" & linefeed)
-					set theMessageStart to (return & "--" & theBoundary)
-					set theMessageEnd to ("--" & theBoundary & return & "Content-Type:")
-					set paraSource to paragraphs of mySource
-					set myHeaderlines to paragraphs of (all headers of thisMessage as rich text)
-
-
-					--GET CONTENT TYPE
-					repeat with myHeaderline in myHeaderlines
-						if myHeaderline starts with "Content-Type: " then
-							set myHeaders to my extractBetween(myHeaderline, "Content-Type: ", ";")
-						end if
-					end repeat
-					set cutSource to my stripHeader(paraSource, myHeaderlines)
-					set evHTML to cutSource
+					set theRecipient to the address of to recipient 1 of thisMessage
+					set MsgLink to "message://%3c" & thisMessage's message id & "%3e"
+					if theRecipient is not "" then set ex to my extractBetween(ReplyAddr, "<", ">") -- extract the Address
 				end try
 
-				--MAKE HEADER TEMPLATE
-				set the_Template to "
+				--HTML EMAIL FUNCTIONS
+				set theBoundary to my extractBetween(mySource, "boundary=\"", "\"" & linefeed)
+				set theMessageStart to (return & "--" & theBoundary)
+				set theMessageEnd to ("--" & theBoundary & return & "Content-Type:")
+				set paraSource to paragraphs of mySource
+				set myHeaderlines to paragraphs of (all headers of thisMessage as rich text)
+
+
+				--GET CONTENT TYPE
+				repeat with myHeaderline in myHeaderlines
+					if myHeaderline starts with "Content-Type: " then
+						set myHeaders to my extractBetween(myHeaderline, "Content-Type: ", ";")
+					end if
+				end repeat
+				set cutSource to my stripHeader(paraSource, myHeaderlines)
+				set evHTML to cutSource
+			end try
+
+			--MAKE HEADER TEMPLATE
+			set the_Template to "
 <table border=\"1\" width=\"100%\" cellspacing=\"0\" cellpadding=\"2\">
 <tbody>
 
@@ -399,11 +398,10 @@ on processSelectedMails(theMessages)
 </table>
 <hr />"
 
-				--SEND ITEM TO EVERNOTE SUBROUTINE
-				my make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBoundary, theMessageStart, theMessageEnd, myHeaders, thisMessage, evHTML, EVnotebook, the_Template)
+			--SEND ITEM TO EVERNOTE SUBROUTINE
+			my make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBoundary, theMessageStart, theMessageEnd, myHeaders, thisMessage, evHTML, EVnotebook, the_Template)
 
-			end repeat
-		end try
+		end repeat
 	end tell
 end processSelectedMails
 

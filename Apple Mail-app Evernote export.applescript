@@ -754,7 +754,7 @@ on htmlFix(multiHTML, theBoundary, myContent)
 	set paraSource to paragraphs of multiHTML
 
 	--TEST FOR / STRIP OUT LEADING SEMI-COLON
-	if item 1 of paraSource contains ";" then
+	if my trimStart(item 1 of paraSource) starts with ";" then
 		set myHeaderlines to (item 1 of paraSource)
 		set multiHTML to my stripHeader(paraSource, myHeaderlines)
 		set paraSource to paragraphs of multiHTML

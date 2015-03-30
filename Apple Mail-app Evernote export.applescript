@@ -822,8 +822,8 @@ on htmlFix(multiHTML, theBoundary, myContent)
 		set the_UTF8Text to quoted form of NewEncodedText
 
 		--URL DECODE CONVERSION
-		set theDecodeScript to "php -r \"echo utf8_encode(urldecode(utf8_decode(" & the_UTF8Text & ")));\"" as text
-		--set theDecodeScript to "php -r \"echo urldecode(utf8_decode(" & the_UTF8Text & "));\"" as text
+		--set theDecodeScript to "php -r \"echo utf8_encode(urldecode(utf8_decode(" & the_UTF8Text & ")));\"" as text
+		set theDecodeScript to "php -r \"echo urldecode(utf8_decode(" & the_UTF8Text & "));\"" as text
 		set theDecoded to (do shell script theDecodeScript)
 
 		--FIX FOR APOSTROPHE / PERCENT / EQUALS ISSUES

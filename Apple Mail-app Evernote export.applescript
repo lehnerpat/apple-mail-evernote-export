@@ -448,7 +448,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 				set baseHTML to my trimStart(multiHTML)
 
 				--DECODE BASE64
-				set baseHTML to do shell script "echo " & (quoted form of baseHTML) & "| base64 -D"
+				set baseHTML to my base64_Decode(baseHTML)
 
 				--MAKE NOTE IN EVERNOTE
 				set n to create note with html the_Template title myTitle notebook EVnotebook

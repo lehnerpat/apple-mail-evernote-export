@@ -90,7 +90,7 @@ property tagging_Switch : "ON"
 -- TYPE THE NAME OF THE NOTEBOOK YOU WANT TO SEND ITEM TO
 -- BETWEEN THE QUOTES IF IT ISN'T YOUR DEFAULT NOTEBOOK.
 -- (EMPTY SENDS TO DEFAULT)
-property EVnotebook : ""
+property enNotebook : ""
 
 -- IF TAGGING IS ON AND YOU'D LIKE TO CHANGE THE DEFAULT TAG,
 -- TYPE IT BETWEEN THE QUOTES ("Email Message" IS DEFAULT)
@@ -195,7 +195,7 @@ end readMsgAndAttchmtCount
 on readEvernoteDefaultNotebook()
 	tell application "Evernote"
 		set allDefaultNotebooks to every notebook whose default is true
-		set EVnotebook to name of (item 1 of allDefaultNotebooks) as text
+		set enNotebook to name of (item 1 of allDefaultNotebooks) as text
 	end tell
 end readEvernoteDefaultNotebook
 
@@ -235,7 +235,7 @@ on showTaggingDialog()
 
 	--SELECT NOTEBOOK
 	if buttonSel is "Select Notebook from List" then
-		set EVnotebook to my selectNotebookFromList()
+		set enNotebook to my selectNotebookFromList()
 	end if
 end showTaggingDialog
 
@@ -279,9 +279,9 @@ on selectNotebookFromList()
 		choose from list of notebookList with title "Select Evernote notebook" with prompt ¬
 			"Current Evernote notebooks" OK button name "OK" cancel button name "New notebook"
 		if (the result is false) then --USER CLICKED CANCEL: CREATE NEW NOTEBOOK OPTION
-			set EVnotebook to text returned of (display dialog "Enter new notebook name:" default answer "")
+			set enNotebook to text returned of (display dialog "Enter new notebook name:" default answer "")
 		else
-			set EVnotebook to item 1 of the result
+			set enNotebook to item 1 of the result
 		end if
 	end tell
 end selectNotebookFromList
@@ -297,7 +297,7 @@ on processSelectedMails(theMessages)
 	tell application "Mail"
 		if tagging_Switch is "ON" then my showTaggingDialog()
 
-		if EVnotebook is "" then my readEvernoteDefaultNotebook() --GET EVERNOTE'S DEFAULT NOTEBOOK
+		if enNotebook is "" then my readEvernoteDefaultNotebook() --GET EVERNOTE'S DEFAULT NOTEBOOK
 
 		repeat with thisMessage in theMessages
 			try
@@ -399,7 +399,7 @@ on processSelectedMails(theMessages)
 <hr />"
 
 			--SEND ITEM TO EVERNOTE SUBROUTINE
-			my make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBoundary, theMessageStart, theMessageEnd, myHeaders, thisMessage, evHTML, EVnotebook, the_Template)
+			my make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBoundary, theMessageStart, theMessageEnd, myHeaders, thisMessage, evHTML, enNotebook, the_Template)
 
 		end repeat
 	end tell
@@ -412,11 +412,11 @@ end processSelectedMails
 =======================================
 *)
 
-on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBoundary, theMessageStart, theMessageEnd, myHeaders, thisMessage, evHTML, EVnotebook, the_Template)
+on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBoundary, theMessageStart, theMessageEnd, myHeaders, thisMessage, evHTML, enNotebook, the_Template)
 	tell application "Evernote"
 		--IS IT A TEXT EMAIL?
 		if myHeaders contains "text/plain" then
-			set n to create note with html the_Template title myTitle notebook EVnotebook
+			set n to create note with html the_Template title myTitle notebook enNotebook
 			if EVTag is not {} then assign EVTag to n
 			tell n to append text myContent
 			set creation date of n to EmailDate
@@ -425,7 +425,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 			-- IF HTML PROCESSING IS TURNED TO "OFF", PROCESS
 			-- AS PLAINTEXT (USEFUL FOR NON-ENGLISH ENCODED EMAILS)
 		else if HTML_Switch is "OFF" then
-			set n to create note with html the_Template title myTitle notebook EVnotebook
+			set n to create note with html the_Template title myTitle notebook enNotebook
 			if EVTag is not {} then assign EVTag to n
 			tell n to append text myContent
 			set creation date of n to EmailDate
@@ -451,7 +451,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 				set baseHTML to my base64_Decode(baseHTML)
 
 				--MAKE NOTE IN EVERNOTE
-				set n to create note with html the_Template title myTitle notebook EVnotebook
+				set n to create note with html the_Template title myTitle notebook enNotebook
 				if EVTag is not {} then assign EVTag to n
 				tell n to append html baseHTML
 				set creation date of n to EmailDate
@@ -463,7 +463,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 				if decode_Success is true then
 
 					--MAKE NOTE IN EVERNOTE
-					set n to create note with html the_Template title myTitle notebook EVnotebook
+					set n to create note with html the_Template title myTitle notebook enNotebook
 					if EVTag is not {} then assign EVTag to n
 					tell n to append html finalHTML
 					set creation date of n to EmailDate
@@ -471,7 +471,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 				else
 
 					--MAKE NOTE IN EVERNOTE
-					set n to create note with html the_Template title myTitle notebook EVnotebook
+					set n to create note with html the_Template title myTitle notebook enNotebook
 					if EVTag is not {} then assign EVTag to n
 					tell n to append text myContent
 					set creation date of n to EmailDate
@@ -491,7 +491,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 					set baseHTML to my base64_Decode(mySource)
 
 					--MAKE NOTE IN EVERNOTE
-					set n to create note with html the_Template title myTitle notebook EVnotebook
+					set n to create note with html the_Template title myTitle notebook enNotebook
 					if EVTag is not {} then assign EVTag to n
 					tell n to append html baseHTML
 					set creation date of n to EmailDate
@@ -503,7 +503,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 					if decode_Success is true then
 
 						--MAKE NOTE IN EVERNOTE
-						set n to create note with html the_Template title myTitle notebook EVnotebook
+						set n to create note with html the_Template title myTitle notebook enNotebook
 						if EVTag is not {} then assign EVTag to n
 						tell n to append html finalHTML
 						set creation date of n to EmailDate
@@ -511,7 +511,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 					else
 
 						--MAKE NOTE IN EVERNOTE
-						set n to create note with html the_Template title myTitle notebook EVnotebook
+						set n to create note with html the_Template title myTitle notebook enNotebook
 						if EVTag is not {} then assign EVTag to n
 						tell n to append text myContent
 						set creation date of n to EmailDate
@@ -522,7 +522,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 			else if mySource contains "text/plain" then
 
 				--MAKE NOTE IN EVERNOTE
-				set n to create note with html the_Template title myTitle notebook EVnotebook
+				set n to create note with html the_Template title myTitle notebook enNotebook
 				if EVTag is not {} then assign EVTag to n
 				tell n to append text myContent
 				set creation date of n to EmailDate
@@ -545,7 +545,7 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 			end if
 
 			--MAKE NOTE IN EVERNOTE
-			set n to create note with html the_Template title myTitle notebook EVnotebook
+			set n to create note with html the_Template title myTitle notebook enNotebook
 			if EVTag is not {} then assign EVTag to n
 			tell n to append html finalHTML
 			set creation date of n to EmailDate
@@ -884,9 +884,9 @@ on announceExportResult(successCount, errNum)
 		else if Plural_Test is 0 then -- FAILURE: NOTHING EXPORTED ????
 			display notification "No Items exported from Mail!" with title "Evernote Export failed!"
 		else if Plural_Test is equal to 1 then -- SUCCESS: ONE ITEM
-			display notification "Successfully exported one item to Notebook '" & EVnotebook & "'" with title "Evernote Export succeeded!"
+			display notification "Successfully exported one item to Notebook '" & enNotebook & "'" with title "Evernote Export succeeded!"
 		else -- SUCCESS: MULTIPLE ITEMS
-			display notification "Successfully exported " & itemNum & " items to Notebook '" & EVnotebook & "'" with title "Evernote Export succeeded!"
+			display notification "Successfully exported " & itemNum & " items to Notebook '" & enNotebook & "'" with title "Evernote Export succeeded!"
 		end if
 	end if
 end announceExportResult

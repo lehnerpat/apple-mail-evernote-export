@@ -774,85 +774,22 @@ on htmlFix(multiHTML, theBoundary, myContent)
 	end if
 
 	--CLEAN CONTENT
-	set AppleScript's text item delimiters to theBoundary
-	set theSourceItems to text items of multiHTML
-	set AppleScript's text item delimiters to ""
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "&#" & "37;" as string
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "="
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "%"
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%\""
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "=\""
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%" & (ASCII character 13)
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to ""
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%%"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "%"
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%" & (ASCII character 10)
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to ""
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%0A"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to ""
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%09"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to ""
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%C2%A0"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "&nbsp;"
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "%20"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to " "
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to (ASCII character 10)
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to ""
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "="
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "&#" & "61;" as string
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "$"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "&#" & "36;" as string
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "'"
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "&apos;"
-	set theEncoded to theSourceItems as text
-
-	set AppleScript's text item delimiters to "\""
-	set theSourceItems to text items of theEncoded
-	set AppleScript's text item delimiters to "\\\""
-	set theEncoded to theSourceItems as text
+	set theEncoded to my splitAndRecombine(multiHTML, theBoundary, "")
+	set theEncoded to my splitAndRecombine(theEncoded, "%", "&#" & "37;" as string)
+	set theEncoded to my splitAndRecombine(theEncoded, "=", "%")
+	set theEncoded to my splitAndRecombine(theEncoded, "%\"", "=\"")
+	set theEncoded to my splitAndRecombine(theEncoded, "%" & (ASCII character 13), "")
+	set theEncoded to my splitAndRecombine(theEncoded, "%%", "%")
+	set theEncoded to my splitAndRecombine(theEncoded, "%" & (ASCII character 10), "")
+	set theEncoded to my splitAndRecombine(theEncoded, "%0A", "")
+	set theEncoded to my splitAndRecombine(theEncoded, "%09", "")
+	set theEncoded to my splitAndRecombine(theEncoded, "%C2%A0", "&nbsp;")
+	set theEncoded to my splitAndRecombine(theEncoded, "%20", " ")
+	set theEncoded to my splitAndRecombine(theEncoded, (ASCII character 10), "")
+	set theEncoded to my splitAndRecombine(theEncoded, "=", "&#" & "61;" as string)
+	set theEncoded to my splitAndRecombine(theEncoded, "$", "&#" & "36;" as string)
+	set theEncoded to my splitAndRecombine(theEncoded, "'", "&apos;")
+	set theEncoded to my splitAndRecombine(theEncoded, "\"", "\\\"")
 
 	set AppleScript's text item delimiters to oldDelims
 
@@ -869,23 +806,13 @@ on htmlFix(multiHTML, theBoundary, myContent)
 
 		--URL DECODE CONVERSION
 		set theDecodeScript to "php -r \"echo utf8_encode(urldecode(utf8_decode(" & the_UTF8Text & ")));\"" as text
-		set theDecoded to do shell script theDecodeScript
+		--set theDecodeScript to "php -r \"echo urldecode(utf8_decode(" & the_UTF8Text & "));\"" as text
+		set theDecoded to (do shell script theDecodeScript)
 
 		--FIX FOR APOSTROPHE / PERCENT / EQUALS ISSUES
-		set AppleScript's text item delimiters to "&apos;"
-		set theSourceItems to text items of theDecoded
-		set AppleScript's text item delimiters to "'"
-		set theDecoded to theSourceItems as text
-
-		set AppleScript's text item delimiters to "&#" & "37;" as string
-		set theSourceItems to text items of theDecoded
-		set AppleScript's text item delimiters to "%"
-		set theDecoded to theSourceItems as text
-
-		set AppleScript's text item delimiters to "&#" & "61;" as string
-		set theSourceItems to text items of theDecoded
-		set AppleScript's text item delimiters to "="
-		set theDecoded to theSourceItems as text
+		set theDecoded to my splitAndRecombine(theDecoded, "&apos;", "'")
+		set theDecoded to my splitAndRecombine(theDecoded, "&#" & "37;" as string, "%")
+		set theDecoded to my splitAndRecombine(theDecoded, "&#" & "61;" as string, "=")
 
 		--RETURN THE VALUE
 		set finalHTML to theDecoded
@@ -894,6 +821,15 @@ on htmlFix(multiHTML, theBoundary, myContent)
 	end try
 
 end htmlFix
+
+on splitAndRecombine(str, firstDelims, secondDelims)
+	local r
+	set AppleScript's text item delimiters to firstDelims
+	set theSourceItems to text items of str
+	set AppleScript's text item delimiters to secondDelims
+	set r to theSourceItems as text
+	return r
+end splitAndRecombine
 
 (*==========================
   NOTIFICATION SUBROUTINES

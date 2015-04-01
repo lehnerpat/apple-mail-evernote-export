@@ -100,6 +100,12 @@ property defaultTag : "Email Message"
 -- AS PLAINTEXT (USEFUL FOR NON-ENGLISH ENCODED EMAILS)
 property HTML_Switch : "ON"
 
+using terms from application "Mail"
+	property emailColor : null
+end using terms from
+
+property archiveExportedEmails : false
+
 
 (*
 ======================================
@@ -127,6 +133,7 @@ property baseHTML : ""
 property paraSource : ""
 property cutSourceItems : ""
 property allCC : ""
+property archiveMailboxName : "Archive"
 
 (*
 ======================================
@@ -556,10 +563,22 @@ on make_Evernote(myTitle, EVTag, EmailDate, MsgLink, myContent, mySource, theBou
 		end tell
 		--ITEM HAS FINISHED! COUNT IT AS A SUCCESS!
 		set successCount to successCount + 1
+		my archiveAndColorizeEmail(thisMessage)
 	end tell
 	log "successCount: " & successCount
 end make_Evernote
 
+on archiveAndColorizeEmail(thisMessage)
+	tell application "Mail"
+		if emailColor is not null then
+			set background color of thisMessage to emailColor
+		end if
+		if archiveExportedEmails is true then
+			set acc to account of mailbox of thisMessage
+			move thisMessage to mailbox archiveMailboxName of acc
+		end if
+	end tell
+end archiveAndColorizeEmail
 
 
 (*

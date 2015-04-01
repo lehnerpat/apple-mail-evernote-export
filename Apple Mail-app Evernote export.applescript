@@ -107,7 +107,6 @@ property HTML_Switch : "ON"
 ======================================
 *)
 property successCount : 0
-property growl_Running : "false"
 property myTitle : "Mail Item"
 property theMessages : {}
 property thisMessage : ""
@@ -141,9 +140,6 @@ set errNum to "0"
 set AppleScript's text item delimiters to ""
 
 try
-    --CHECK FOR GROWL
-    my Growl_Check()
-   
     --SET UP ACTIVITIES
     my item_Check()
    
@@ -152,9 +148,8 @@ try
        
         --GET FILE COUNT
         my item_Count(theMessages)
-       
-        --ANNOUNCE THE EXPORT OF ITEMS 
-        my process_Items(itemNum, attNum)
+
+		my announceExportStart(itemNum, attNum) --ANNOUNCE THE EXPORT OF ITEMS 
        
         --PROCESS MAIL ITEMS FOR EXPORT
         my mail_Process(theMessages)
@@ -163,40 +158,13 @@ try
         --NO MESSAGES SELECTED
         set successCount to -1
     end if
-   
-    --GROWL RESULTS
-    my growl_Growler(growl_Running, successCount, errNum)
-   
     --ERROR HANDLING
-on error errText number errNum
-    if growl_Running is true then
-       
-        --GROWL FAILURE FOR CANCEL
-        if errNum is -128 then
-            tell application "Growl"
-                notify with name ¬
-                    "Failure Notification" title ¬
-                    "User Cancelled" description ¬
-                    "Failed to export!" application name "Apple Mail to Evernote" icon of application "Mail"
-               
-            end tell
-        else
-           
-            --GROWL FAILURE FOR ERROR
-            tell application "Growl"
-                notify with name ¬
-                    "Failure Notification" title ¬
-                    "Import Failure" description "Failed to export " & return & myTitle & ¬
-                    "\"  due to the following error: " & return & errText ¬
-                    application name "Apple Mail to Evernote" icon of application "Mail"
-               
-            end tell
-        end if
-       
-        --NON-GROWL ERROR MSG. FOR ERROR
-    else if growl_Running is false then
-        display dialog "Item Failed to Import: " & errNum & return & errText with icon 0
-    end if
+	
+	my announceExportResult(successCount, errNum)
+	
+on error errText number errNum --ERROR HANDLING
+	display dialog "An outer error occurred"
+	my announceExportError(errText, errNum)
 end try
 
 (*
@@ -1023,100 +991,78 @@ on htmlFix(multiHTML, theBoundary, myContent)
    
 end htmlFix
 
-(*
-======================================
-// GROWL SUBROUTINES
-=======================================
-*)
+(*==========================
+  NOTIFICATION SUBROUTINES
+==========================*)
 
---CHECK FOR GROWL
-on Growl_Check()
-    if appIsRunning("Growl") then
-        set growl_Running to true
-        tell application "Growl"
-            set allNotificationsFiles to {"Import To Evernote", "Success Notification", "Failure Notification"}
-            set enabledNotificationsFiles to {"Import To Evernote", "Success Notification", "Failure Notification"}
-            register as application ¬
-                "Apple Mail to Evernote" all notifications allNotificationsFiles ¬
-                default notifications enabledNotificationsFiles ¬
-                icon of application "Mail"
-        end tell
-    end if
-end Growl_Check
+on announceExportStart(itemNum, attNum)
+	set attPlural to " attachment."
+	if attNum = 0 then
+		set attNum to "No"
+	else if attNum > 1 then
+		set attPlural to " attachments."
+	end if
+	
+	if itemNum = 1 then
+		set itemPlural to " Item "
+	else
+		set itemPlural to " Items "
+	end if
+	
+	display notification ¬
+		"Now Processing " & itemNum & itemPlural & "with " & attNum & attPlural ¬
+		with title "Import To Evernote Started"
+end announceExportStart
 
---ANNOUNCE THE COUNT OF TOTAL ITEMS TO EXPORT
-on process_Items(itemNum, attNum)
-    set attPlural to ""
-    if attNum = 0 then
-        set attNum to "No"
-    else if attNum > 1 then
-        set attPlural to "s"
-    end if
-    tell application "Finder"
-        if growl_Running is true then
-            set Plural_Test to (itemNum) as number
-            if Plural_Test is greater than 1 then
-                tell application "Growl"
-                    notify with name ¬
-                        "Import To Evernote" title ¬
-                        "Import To Evernote Started" description "Now Processing " & itemNum & " Items with " & attNum & ¬
-                        " attachment" & attPlural & "." application name ¬
-                        "Apple Mail to Evernote" icon of application "Mail"
-                end tell
-            else
-                tell application "Growl"
-                    notify with name ¬
-                        "Import To Evernote" title ¬
-                        "Import To Evernote Started" description "Now Processing " & itemNum & " Item With " & attNum & ¬
-                        " Attachment" & attPlural & "." application name ¬
-                        "Apple Mail to Evernote" icon of application "Mail"
-                   
-                end tell
-            end if
-        end if
-    end tell --FINDER
-end process_Items
+-- ANNOUNCE RESULTS
+on announceExportResult(successCount, errNum)
+	-- FAILURE FOR CANCEL
+	if errNum is -128 then
+		display notification "User Cancelled" with title "Failed to export!"
+	else
+		
+		set Plural_Test to (successCount) as number
+		if Plural_Test is -1 then -- FAILURE: NOTHING SELECTED
+			display notification "No Items selected in Mail!" with title "Evernote Export failed!"
+		else if Plural_Test is 0 then -- FAILURE: NOTHING EXPORTED ????
+			display notification "No Items exported from Mail!" with title "Evernote Export failed!"
+		else if Plural_Test is equal to 1 then -- SUCCESS: ONE ITEM
+			display notification "Successfully exported one item to Notebook '" & EVnotebook & "'" with title "Evernote Export succeeded!"
+		else -- SUCCESS: MULTIPLE ITEMS
+			display notification "Successfully exported " & itemNum & " items to Notebook '" & EVnotebook & "'" with title "Evernote Export succeeded!"
+		end if
+	end if
+end announceExportResult
 
---GROWL RESULTS
-on growl_Growler(growl_Running, successCount, errNum)
-    if growl_Running is true then
-        tell application "Growl"
-            -- GROWL FAILURE FOR CANCEL
-            if errNum is -128 then tell application "Growl" to notify with name ¬
-                "Failure Notification" title ¬
-                "User Cancelled" description ¬
-                "Failed to export!" application name "Apple Mail to Evernote" icon of application "Mail"
-           
-           
-            -- GROWL FAILURE
-            set Plural_Test to (successCount) as number
-            if Plural_Test is -1 then
-                notify with name ¬
-                    "Failure Notification" title ¬
-                    "Import Failure" description "No Items Selected In Apple Mail!" application name "Apple Mail to Evernote" icon of application "Mail"
-            else if Plural_Test is 0 then
-                notify with name ¬
-                    "Failure Notification" title ¬
-                    "Import Failure" description "No Items Exported From Mail!" application name "Apple Mail to Evernote" icon of application "Mail"
-               
-               
-                -- GROWL SUCCESS
-            else if Plural_Test is equal to 1 then
-                notify with name ¬
-                    "Success Notification" title ¬
-                    "Import Success" description "Successfully Exported " & itemNum & ¬
-                    " Item to the " & EVnotebook & " Notebook in Evernote" application name "Apple Mail to Evernote" icon of application "Mail"
-               
-               
-                -- GROWL SUCCESS
-            else if Plural_Test is greater than 1 then
-                notify with name ¬
-                    "Success Notification" title ¬
-                    "Import Success" description "Successfully Exported " & itemNum & ¬
-                    " Items to the " & EVnotebook & " Notebook in Evernote" application name "Apple Mail to Evernote" icon of application "Mail"
-               
-            end if
-        end tell
-        set itemNum to "0"
-    end if
-end growl_Growler
+on announceExportError(errText, errNum)
+	if errNum is -128 then
+		display notification "User Cancelled" with title "Failed to export!"
+	else
+		display notification "The following error occurred:" & return & errText ¬
+			& "(error number " & errNum & ")" with title "Failed to export!"
+	end if
+end announceExportError
+
+(*=============================
+  FURTHER UTILITY SUBROUTINES
+=============================*)
+
+on trimStart(str)
+	-- Thanks to HAS (http://applemods.sourceforge.net/mods/Data/String.php)
+	local str, whiteSpace
+	try
+		set str to str as string
+		set whiteSpace to {character id 10, return, space, tab}
+		try
+			repeat while str's first character is in whiteSpace
+				set str to str's text 2 thru -1
+			end repeat
+			return str
+		on error number -1728
+			return ""
+		end try
+	on error eMsg number eNum
+		error "Can't trimStart: " & eMsg number eNum
+	end try
+end trimStart
+

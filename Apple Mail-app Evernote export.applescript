@@ -1,27 +1,23 @@
 (*
-◸ Veritrope.com
-Apple Mail to Evernote
-VERSION 2.07
-March 14, 2014
+Export Emails from Apple Mail to Evernote
+Patrick Lehner <lehner.patrick@gmx.de>
+VERSION 3.0
+March 27, 2015
 
 // TERMS OF USE:
-This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
-
-// LIKE THIS SCRIPT?
-If this AppleScript is helpful to you, please show your support here:
-http://veritrope.com/support
+This work, "Apple Mail-app Evernote export", is a modified version (derivative) of "Apple Mail to Evernote" by Veritrope.com, used under CC BY-NC-SA 3.0.
+"Apple Mail-app Evernote export" is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License by Patrick Lehner.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/.
 
 // IMPORTANT LINKS:
--- Project Page: http://veritrope.com/code/apple-mail-to-evernote
+-- Project Page: <new project page pending>
+
+// ORIGINALLY DEVELOPED BY VERITROPE:
+http://veritrope.com/code/apple-mail-to-evernote
+Adapted for OS X Yosemite's Notification center (instead of Growl).
 
 // REQUIREMENTS:
-THIS SCRIPT REQUIRES LION OR GREATER (OS X 10.7+) TO RUN WITHOUT MODIFICATION
-
-THE APP STORE VERSION OF GROWL IS REQUIRED FOR THIS SCRIPT TO WORK!
-(If you do not have it installed, you'll get an error when you try to save this script.)
-    -- GROWL IS AVAILABLE FOR DOWNLOAD HERE:
-    -- http://bit.ly/GrowlApp
+THIS SCRIPT REQUIRES YOSEMITE OR GREATER (OS X 10.10+) TO RUN WITHOUT MODIFICATION
 
 // INSTALLATION:  
 -- You can save this script to /Library/Scripts/Mail Scripts and launch it using the system-wide script menu from the Mac OS X menu bar. (The script menu can be activated using the AppleScript Utility application).
@@ -29,14 +25,13 @@ THE APP STORE VERSION OF GROWL IS REQUIRED FOR THIS SCRIPT TO WORK!
 -- The "User Switches" below allow you to customize the way this script works.
 -- You can save this script as a service and trigger it with a keyboard shortcut.
 
-    (Optional but recommended)
-    Easier Keyboard Shortcut with FastScripts
-    -- Download and Install FastScripts here:
-    -- http://bit.ly/FastScripts
-
 // CHANGELOG:
 
-Version 2.07: CHANGE TO UTF DECODING (THANKS EDUARDO!). CC RECIPIENTS ADDED TO NOTEHEADER
+	* 3.0:
+		- Migrate the script from using Growl to using Yosemite's Notification Center
+
+    * 2.07
+    CHANGE TO UTF DECODING (THANKS EDUARDO!). CC RECIPIENTS ADDED TO NOTEHEADER
 
     * 2.06
     SWITCH FOR PLAINTEXT OPERATION (FOR NON-ENGLISH ENCODING), FIX FOR MISSING RECIPIENT NAME

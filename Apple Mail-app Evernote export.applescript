@@ -302,72 +302,6 @@ on Notebook_List()
     end tell
 end Notebook_List
 
-(*
-======================================
-// UTILITY SUBROUTINES
-=======================================
-*)
-
--- EXTRACTION SUBROUTINE
-on extractBetween(SearchText, startText, endText)
-    set tid to AppleScript's text item delimiters
-    set AppleScript's text item delimiters to startText
-    set endItems to text of text item -1 of SearchText
-    set AppleScript's text item delimiters to endText
-    set beginningToEnd to text of text item 1 of endItems
-    set AppleScript's text item delimiters to tid
-    return beginningToEnd
-end extractBetween
-
---SORT SUBROUTINE
-on simple_sort(my_list)
-    set the index_list to {}
-    set the sorted_list to {}
-    repeat (the number of items in my_list) times
-        set the low_item to ""
-        repeat with i from 1 to (number of items in my_list)
-            if i is not in the index_list then
-                set this_item to item i of my_list as text
-                if the low_item is "" then
-                    set the low_item to this_item
-                    set the low_item_index to i
-                else if this_item comes before the low_item then
-                    set the low_item to this_item
-                    set the low_item_index to i
-                end if
-            end if
-        end repeat
-        set the end of sorted_list to the low_item
-        set the end of the index_list to the low_item_index
-    end repeat
-    return the sorted_list
-end simple_sort
-
---REMOVE EMBEDDED IMAGE REFERENCES
-on stripCID(imgstpHTML)
-    set theCommandString to "echo " & quoted form of imgstpHTML & " | sed 's/\"cid:.*\"/\"\"/'"
-    set theResult to do shell script theCommandString
-    return theResult
-end stripCID
-
-on trimStart(str)
-    -- Thanks to HAS (http://applemods.sourceforge.net/mods/Data/String.php)
-    local str, whiteSpace
-    try
-        set str to str as string
-        set whiteSpace to {character id 10, return, space, tab}
-        try
-            repeat while str's first character is in whiteSpace
-                set str to str's text 2 thru -1
-            end repeat
-            return str
-        on error number -1728
-            return ""
-        end try
-    on error eMsg number eNum
-        error "Can't trimStart: " & eMsg number eNum
-    end try
-end trimStart
 
 
 (*
@@ -1047,6 +981,48 @@ end announceExportError
   FURTHER UTILITY SUBROUTINES
 =============================*)
 
+-- EXTRACTION SUBROUTINE
+on extractBetween(SearchText, startText, endText)
+	set tid to AppleScript's text item delimiters
+	set AppleScript's text item delimiters to startText
+	set endItems to text of text item -1 of SearchText
+	set AppleScript's text item delimiters to endText
+	set beginningToEnd to text of text item 1 of endItems
+	set AppleScript's text item delimiters to tid
+	return beginningToEnd
+end extractBetween
+
+--SORT SUBROUTINE
+on simple_sort(my_list)
+	set the index_list to {}
+	set the sorted_list to {}
+	repeat (the number of items in my_list) times
+		set the low_item to ""
+		repeat with i from 1 to (number of items in my_list)
+			if i is not in the index_list then
+				set this_item to item i of my_list as text
+				if the low_item is "" then
+					set the low_item to this_item
+					set the low_item_index to i
+				else if this_item comes before the low_item then
+					set the low_item to this_item
+					set the low_item_index to i
+				end if
+			end if
+		end repeat
+		set the end of sorted_list to the low_item
+		set the end of the index_list to the low_item_index
+	end repeat
+	return the sorted_list
+end simple_sort
+
+--REMOVE EMBEDDED IMAGE REFERENCES
+on stripCID(imgstpHTML)
+	set theCommandString to "echo " & quoted form of imgstpHTML & " | sed 's/\"cid:.*\"/\"\"/'"
+	set theResult to do shell script theCommandString
+	return theResult
+end stripCID
+
 on trimStart(str)
 	-- Thanks to HAS (http://applemods.sourceforge.net/mods/Data/String.php)
 	local str, whiteSpace
@@ -1066,3 +1042,24 @@ on trimStart(str)
 	end try
 end trimStart
 
+-- Return the argument with all leading and trailing whitespace trimmed
+on trim(str)
+	local str, whiteSpace
+	try
+		set str to str as string
+		set whiteSpace to {character id 10, return, space, tab}
+		try
+			repeat while str's first character is in whiteSpace
+				set str to str's text 2 thru -1
+			end repeat
+			repeat while str's last character is in whiteSpace
+				set str to str's text 1 thru -2
+			end repeat
+			return str
+		on error number -1728
+			return ""
+		end try
+	on error eMsg number eNum
+		error "Can't trimStart: " & eMsg number eNum
+	end try
+end trim

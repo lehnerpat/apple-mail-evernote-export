@@ -709,15 +709,24 @@ on base64_Check(mySource)
 end base64_Check
 
 --BASE64 DECODE
+-- Note: Apparently there are two different ways that Base64 content is transmitted. Some cases
+--   are handled by the code at the call site already, resulting in a pure Base64 block, which can
+--   be thrown into the shell command below. Other cases result in additional headers left in the
+--   block, which are properly stripped by this function.
 on base64_Decode(mySource)
 	--USE TID TO QUICKLY ISOLATE BASE64 DATA
 	set oldDelim to AppleScript's text item delimiters
-	set AppleScript's text item delimiters to "Content-Type: text/html"
-	set base64_Raw to second text item of mySource
-	set AppleScript's text item delimiters to linefeed & linefeed
-	set base64_Raw to second text item of base64_Raw
-	set AppleScript's text item delimiters to "-----"
-	set multiHTML to first text item of base64_Raw
+	set multiHTML to mySource
+	-- This try-block silently discards any extraction errors caused by the absense of the
+	--   additional headers mentioned above.
+	try
+		set AppleScript's text item delimiters to "Content-Type: text/html"
+		set base64_Raw to second text item of mySource
+		set AppleScript's text item delimiters to linefeed & linefeed
+		set base64_Raw to second text item of base64_Raw
+		set AppleScript's text item delimiters to "-----"
+		set multiHTML to first text item of base64_Raw
+	end try
 	set AppleScript's text item delimiters to oldDelim
 
 	--DECODE BASE64
